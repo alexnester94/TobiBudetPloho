@@ -12,17 +12,25 @@ public class TelBotFighter extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
+            //update.getMessage в локальную переменную
             String text = update.getMessage().getText();
-            String query = update.getMessage().getText();
+            String query = update.getMessage().getText(); //wtf?
             Long chatId = update.getMessage().getChatId();
             String firstName = update.getMessage().getFrom().getFirstName();
             String secName = update.getMessage().getFrom().getLastName();
-            String chatname = update.getMessage().getChat().getTitle();//наименовая чата
-            String finalName = firstName + " " + secName;
-            int MAX_DAMAGE = 6;
+            String chatname = update.getMessage().getChat().getTitle();//наименовая чата 
+               //коммент лишний - у тебя переменная итак называется chat name
+            String finalName = firstName + " " + secName; //fullname?
+            int MAX_DAMAGE = 6; //в константы (private final static int - поля)
             int MIN_DAMAGE = 1;
 
-            if (text.substring(0, 4).equals("/hit")) {
+            /*
+                saveMessageToDb() (aka execDBDefaultAction)
+                if(isHitCommand){
+                    executeHit(...)
+                }
+            */
+            if (text.substring(0, 4).equals("/hit")) { // if (isHitCommand(text))
                 executeHit(chatId, finalName, query, text, MAX_DAMAGE, MIN_DAMAGE);
             } else {
                 execDBDefaultAction(chatId, finalName, query);
@@ -31,6 +39,7 @@ public class TelBotFighter extends TelegramLongPollingBot {
         }
     }
 
+    //saveMessage
     private void execDBDefaultAction(Long chatId, String finalName, String query) {
         try {
             Conn.CreateDB(chatId);
@@ -38,12 +47,13 @@ public class TelBotFighter extends TelegramLongPollingBot {
             if (Conn.checkNewUser(chatId, finalName))
                 Conn.addNewUser(chatId, finalName);
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); //printStackTrace это плохая практика. Лучше уж в slf4j
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
+    //over refactoring
     private int getTextLength(String text) {
         return text.length();
     }
@@ -63,6 +73,8 @@ public class TelBotFighter extends TelegramLongPollingBot {
         return "Сегодня на " + text.substring(5, text.length()) + " напали фанаты хаскеля, нанеся ему: " + damage + " " + getKickWord(damage);
     }
 
+    //side-эффект. У тебя void-метод, который на самом деле меняет message
+    //этот метод лучше не выделять - у него нечестный контракт
     private void execDamageMessage(int MAX_DAMAGE, int MIN_DAMAGE, SendMessage message, Long chatId, String text, int damage) {
         message.
                 setChatId(chatId).
@@ -71,6 +83,10 @@ public class TelBotFighter extends TelegramLongPollingBot {
 
     private void execDamage(int MAX_DAMAGE, int MIN_DAMAGE, SendMessage message, Long chatId, String text) {
         int damage = getRandomDamage(MAX_DAMAGE, MIN_DAMAGE);
+        /*      message.
+                setChatId(chatId).
+                setText(getDamageText(damage, text));
+                */
         execDamageMessage(MAX_DAMAGE, MIN_DAMAGE, message, chatId, text, damage);
         execDamageDB(chatId, text, damage, message);
     }
@@ -82,7 +98,7 @@ public class TelBotFighter extends TelegramLongPollingBot {
             e.printStackTrace();
         }
         try {
-            execute(message);
+            execute(message); //лучше в отдельный метод, и вызывать его не здесь
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -90,6 +106,7 @@ public class TelBotFighter extends TelegramLongPollingBot {
 
     private void getErrorExecDamage (SendMessage message, Long chatId) {
         message.setChatId(chatId).setText("Ты забыл ввести имя, пример: /hit @dartVaider.");
+        //+ ", придурок."
         try {
             execute(message); // Sending our message object to user
         } catch (TelegramApiException e) {
@@ -101,11 +118,13 @@ public class TelBotFighter extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        //дублирование кода - выделить в метод
     }
 
     private void executeHit(Long chatId, String finalName, String query, String text, int MAX_DAMAGE, int MIN_DAMAGE) {
         SendMessage message = new SendMessage();
         execDBDefaultAction(chatId, finalName, query);
+        //if(text.length > MIN_TEXT_LENGTH)
         if (getTextLength(text) > 5) {
             execDamage(MAX_DAMAGE, MIN_DAMAGE, message, chatId, text);
         } else {
