@@ -52,7 +52,7 @@ public class TelBotFighter extends TelegramLongPollingBot {
     }
 
     private String getKickWord(int damage) {
-        int div100 = damage % 10;
+        int div100 = damage % 100;
         if (div100 >= 10 && div100 <= 20) return "ударов"; 
         else { 
             int div10 = damage % 10;
