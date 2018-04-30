@@ -121,6 +121,7 @@ public class TelBotFighter extends TelegramLongPollingBot {
 
 
     public String getBotToken() {
-        return "457855381:AAGZhbu886jk9ji4UYrxlZxQhyaqV3-FY_Y";
-    }
+        return 1;
+        }
+
 }
