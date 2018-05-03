@@ -4,13 +4,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+// V: тебе нужен корневой пакет, типа ru.nesterchur.tobiplohobot
 
-public class Conn {
-    public static Connection conn;
+
+public class Conn { //V: символы можно не жалеть - DatabaseConnection, например
+    public static Connection conn; //V: путаница. Есть твой класс - Conn, a есть переменная conn, которая НЕ ЭТОГО типа.
+                                   //есть смысл твой класс назвать как-то по-другому, а переменную - connection
     public static Statement statmt;
     public static ResultSet resSet;
 
     // --------ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ--------
+    //V: если это делать не в конструкторе, а в методе, и назвать метод connect - будет самодокументируемый код
     public static void Conn() throws ClassNotFoundException, SQLException
     {
         conn = null;
@@ -21,15 +25,21 @@ public class Conn {
     }
 
     // --------Создание таблицы--------
+    // имя метода должно начинаться с маленькой буквы 
     public static void CreateDB(Long chatId) throws ClassNotFoundException, SQLException
     {
         statmt = conn.createStatement();
+        //в одну таблицу
+        //скрипты разворачивания базы лучше вынести в *.sql-файлы, и тут их читать и из них разворачивать базу
         statmt.execute("CREATE TABLE if not exists '" + chatId +"' ('name' text, 'nickName' text, 'hill' INT, 'check_damage' INT, 'check_for_today' INT);");
-
+        
+        //для логирования лучше использовать slf4j
         System.out.println("Создана таблица: " + chatId);
     }
 
     // --------Заполнение таблицы--------
+    //твой класс выполняет уже как минимум 2 задачи: разворачивание БД И взаимодействие бизнес-логики с БД (ну т.е. инсерты итд)
+    //такое как правило в *Dao-классах. Типа ChatsDao.
     public static void WriteDBMessage(String user, String messagetext) throws SQLException
     {
         statmt = conn.createStatement();
@@ -71,6 +81,7 @@ public class Conn {
     }
 
     // -------- Вывод таблицы--------CREATE TABLE `messages` ( `user` TEXT, `messagetext` TEXT )
+    // DEL
     public static void ReadDB() throws ClassNotFoundException, SQLException
     {
         resSet = statmt.executeQuery("SELECT * FROM users");
