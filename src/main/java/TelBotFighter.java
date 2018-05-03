@@ -52,11 +52,16 @@ public class TelBotFighter extends TelegramLongPollingBot {
     }
 
     private String getKickWord(int damage) {
-        if (damage == 1) {
-            return "удар";
-        } else if(damage > 1 && damage <5) {
-            return "удара";
-        } else return "ударов";
+        int div100 = damage % 10;
+        if (div100 >= 10 && div100 <= 20) return "ударов"; 
+        else { 
+            int div10 = damage % 10;
+            if (div10 == 1)
+               return "удар";
+            } else if(div10 > 1 && div10 <5) {
+               return "удара";
+            } else return "ударов";
+        } 
     }
 
     private String getDamageText(int damage, String text) {
@@ -113,15 +118,12 @@ public class TelBotFighter extends TelegramLongPollingBot {
         }
     }
 
-
     public String getBotUsername() {
         return "MixKombatBot";
     }
-
-
-
+	
     public String getBotToken() {
         return 1;
-        }
+    }
 
 }
